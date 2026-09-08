@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Controle de vendas — Black Blue</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<section class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <a class="auth-brand" href="#"><span></span>Controle de vendas</a>
+    <p class="micro auth-micro">SEU ESPAÇO DE VENDAS</p>
+    <div id="authSetupWarning" class="setup-warning" hidden>
+      Configure o Supabase no arquivo <b>config.js</b> antes de entrar.
+    </div>
+    <form id="authForm">
+      <span class="auth-kicker">ACESSO AO PAINEL</span>
+      <h1>Entre na sua conta.</h1>
+      <p>Suas vendas ficam sincronizadas com o Supabase.</p>
+      <label>E-mail<input id="authEmail" type="email" required autocomplete="email" placeholder="seu@email.com"></label>
+      <label>Senha<input id="authPassword" type="password" required minlength="6" autocomplete="current-password" placeholder="••••••••"></label>
+      <button class="primary auth-submit" type="submit">Entrar</button>
+      <button class="auth-alt" type="button" id="signupBtn">Criar minha conta</button>
+      <small id="authMessage"></small>
+    </form>
+  </div>
+</section>
+
+<div class="app" id="dashboardApp" hidden>
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="#" data-view="overview"><span></span>Controle de vendas</a>
+    <p class="micro">SEU ESPAÇO DE VENDAS</p>
+    <nav>
+      <button class="nav active" data-view="overview">G <b>Visão geral</b></button>
+      <button class="nav" data-view="sales">V <b>Vendas</b><em id="sideSales">5</em></button>
+      <button class="nav" data-view="clients">C <b>Clientes</b><em id="sideClients">5</em></button>
+      <button class="nav" data-view="settings">⚙ <b>Configurações</b></button>
+    </nav>
+    <div class="sync-box"><i id="syncDot"></i><span id="syncText">Conectando...</span></div>
+    <div class="profile">
+      <i>G</i>
+      <div class="profile-copy"><strong>Guilherme</strong><small id="accountEmail">Web Developer</small></div>
+      <button id="logoutBtn" title="Sair">↗</button>
+    </div>
+  </aside>
+
+  <header class="mobilebar">
+    <button id="menuBtn">☰</button><strong>Controle de vendas</strong><button class="add" data-new-sale>＋</button>
+  </header>
+
+  <main>
+    <section class="view active" id="overview">
+      <header class="head">
+        <div><span>G / VISÃO GERAL</span><h1>Painel de vendas</h1><p>Seus sites. Suas conquistas. Tudo em um lugar.</p></div>
+        <button class="primary" data-new-sale>＋ Nova venda</button>
+      </header>
+
+      <div class="toolbar">
+        <div class="demo" id="demoLabel"><i></i>Visualizando dados de exemplo</div>
+        <div class="filters">
+          <input id="overviewSearch" placeholder="Buscar...">
+          <select id="period">
+            <option value="all">Todos os períodos · BRL</option>
+            <option value="7">Últimos 7 dias · BRL</option>
+            <option value="30">Últimos 30 dias · BRL</option>
+            <option value="month">Este mês · BRL</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="stats">
+        <article><span>Faturamento total</span><strong id="revenue">R$ 18.000,00</strong><small>Valor total das vendas</small></article>
+        <article><span>Sites vendidos</span><strong id="sites">05</strong><small>Projetos fechados</small></article>
+        <article><span>Ticket médio</span><strong id="ticket">R$ 3.600,00</strong><small>Valor médio por site</small></article>
+        <article><span>Clientes</span><strong id="clients">05</strong><small>Clientes únicos</small></article>
+      </div>
+
+      <div class="grid2">
+        <article class="panel chartPanel trendPanel blackBluePanel">
+          <div class="salesHero">
+            <div class="salesHeroTop">
+              <span class="heroBadge">CONTROLE DE VENDAS</span>
+              <h2 class="heroTitle">Vendas hoje</h2>
+              <p class="heroSub">Painel diário com atualização automática e tendência por dia.</p>
+            </div>
+
+            <div class="salesHeroValue">
+              <small>FATURAMENTO DO DIA</small>
+              <div class="valueFrame">
+                <span class="valueCurrency">R$</span>
+                <strong id="todaySales">0,00</strong>
+              </div>
+              <span id="todayCount">0 vendas hoje</span>
+            </div>
+          </div>
+
+          <div class="trendTop">
+            <div class="trendHeading">
+              <span>DESEMPENHO POR DIA</span>
+              <h2>Tendência de vendas</h2>
+              <p>O gráfico mostra quanto você vendeu em cada dia. Dias sem venda voltam para R$ 0.</p>
+            </div>
+          </div>
+
+          <div class="chartBox">
+            <div class="chartYAxis" id="chartYAxis"></div>
+            <svg id="chart" viewBox="0 0 1000 330" preserveAspectRatio="none" aria-label="Tendência diária de vendas"></svg>
+            <div class="chartLabels" id="chartLabels"></div>
+            <div class="chartTooltip" id="chartTooltip" hidden></div>
+          </div>
+
+          <div class="trendStats">
+            <div>
+              <small>TOTAL NO PERÍODO</small>
+              <strong id="chartTotal">R$ 0</strong>
+            </div>
+            <div>
+              <small>MELHOR DIA</small>
+              <strong id="bestDay">—</strong>
+            </div>
+            <div>
+              <small>DIAS COM VENDA</small>
+              <strong id="activeDays">00</strong>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel summary summaryWide">
+          <div class="summaryIntro">
+            <span>RESUMO</span>
+            <h2>Seu ritmo</h2>
+          </div>
+          <div><small>Maior venda</small><strong id="largest">R$ 0</strong></div>
+          <div><small>Última venda</small><strong id="latest">—</strong></div>
+          <div><small>Projetos pendentes</small><strong id="pending">00</strong></div>
+          <button data-view="sales">Ver todas as vendas →</button>
+        </article>
+      </div>
+
+      <article class="panel tablePanel">
+        <div class="panelHead"><div><span>HISTÓRICO</span><h2>Vendas registradas</h2><p id="historySub">Exemplos para conhecer seu painel</p></div><strong><b id="recordCount">5</b> registros</strong></div>
+        <div class="tableWrap"><table><thead><tr><th>CLIENTE</th><th>PROJETO</th><th>DATA</th><th>STATUS</th><th>VALOR</th><th></th></tr></thead><tbody id="overviewBody"></tbody></table></div>
+      </article>
+    </section>
+
+    <section class="view" id="sales">
+      <header class="head">
+        <div><span>V / VENDAS</span><h1>Suas vendas</h1><p>Registre e acompanhe todos os projetos fechados.</p></div>
+        <button class="primary" data-new-sale>＋ Nova venda</button>
+      </header>
+      <div class="toolbar">
+        <input id="salesSearch" placeholder="Buscar cliente ou projeto...">
+        <select id="statusFilter"><option value="all">Todos os status</option><option>Fechada</option><option>Pendente</option></select>
+      </div>
+      <article class="panel tablePanel">
+        <div class="panelHead"><div><span>REGISTROS</span><h2>Histórico completo</h2></div><strong><b id="salesCount">0</b> vendas</strong></div>
+        <div class="tableWrap"><table><thead><tr><th>CLIENTE</th><th>PROJETO</th><th>DATA</th><th>STATUS</th><th>VALOR</th><th></th></tr></thead><tbody id="salesBody"></tbody></table></div>
+      </article>
+    </section>
+
+    <section class="view" id="clientsView">
+      <header class="head"><div><span>C / CLIENTES</span><h1>Clientes</h1><p>Quem já fechou projetos com você.</p></div><button class="primary" data-new-sale>＋ Nova venda</button></header>
+      <div class="toolbar"><input id="clientSearch" placeholder="Buscar cliente..."></div>
+      <div class="clientGrid" id="clientGrid"></div>
+    </section>
+
+    <section class="view" id="settings">
+      <header class="head"><div><span>⚙ / CONFIGURAÇÕES</span><h1>Configurações</h1><p>Controle os dados do seu painel.</p></div></header>
+      <div class="settingsGrid">
+        <article class="panel settingsCard"><span>BACKUP</span><h2>Exportar dados</h2><p>Baixe um arquivo JSON com todas as as vendas atuais do seu painel.</p><button id="exportBtn">Exportar backup ↓</button></article>
+        <article class="panel settingsCard"><span>IMPORTAÇÃO</span><h2>Restaurar backup</h2><p>Carregue um arquivo exportado anteriormente para restaurar os dados do painel.</p><label class="fileBtn">Importar arquivo ↑<input id="importInput" type="file" accept=".json,application/json"></label></article>
+      </div>
+    </section>
+  </main>
+</div>
+
+<dialog id="saleModal">
+  <form id="saleForm">
+    <header><div><span>NOVA VENDA</span><h2 id="modalTitle">Registrar projeto</h2><p>Adicione a venda ao seu painel.</p></div><button type="button" id="closeModal">×</button></header>
+    <input type="hidden" id="saleId">
+    <label>Cliente<input id="clientName" required placeholder="Ex.: Studio Aurora"></label>
+    <label>Projeto<input id="projectName" required placeholder="Ex.: Site institucional"></label>
+    <div class="form2"><label>Data<input id="saleDate" type="date" required></label><label>Valor (R$)<input id="saleValue" type="number" min="0" step="0.01" required></label></div>
+    <label>Status<select id="saleStatus"><option>Fechada</option><option>Pendente</option></select></label>
+    <footer><button type="button" id="cancelModal">Cancelar</button><button class="primary" type="submit">Salvar venda</button></footer>
+  </form>
+</dialog>
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
