@@ -534,7 +534,10 @@ main{
   border-color:rgba(107,135,196,.18);
   color:#edf3ff;
 }
-
+.toolbar select option{
+  background:#0b0f16;
+  color:#edf3ff;
+}
 .toolbar input::placeholder,
 .auth-card input::placeholder{
   color:#7387ab;
