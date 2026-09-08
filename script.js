@@ -230,7 +230,7 @@ function renderChart(list){
   const bottom=274;
   const usableH=bottom-top;
   const maxValue=Math.max(0,...series.map(p=>p.value));
-  const axisMax=niceAxisMax(maxValue);
+  const axisMax=Math.max(maxValue,100);
 
   const points=series.map((p,i)=>{
     const x=series.length===1 ? w/2 : i*(w/(series.length-1));
@@ -238,20 +238,21 @@ function renderChart(list){
     return {...p,x,y};
   });
 
-  // Linhas horizontais e eixo sempre começando em zero.
+  // Eixo de R$ 100 em R$ 100, sem arredondar o valor máximo real.
   let grid='';
   let yLabels='';
-const step = 100;
-const gridLines = Math.floor(axisMax / step) + 1;
+  const step=100;
+  const firstLabel=Math.floor(axisMax/step)*step;
 
-for(let i=0;i<gridLines;i++){
-  const value = axisMax - (i * step);
-  const ratio = value / axisMax;
-  const y = bottom - (ratio * usableH);
-    const baseline=i===gridLines-1;
+  for(let value=firstLabel; value>=0; value-=step){
+    const ratioFromTop=1-(value/axisMax);
+    const y=top+ratioFromTop*usableH;
+    const baseline=value===0;
+
     grid+=`<line x1="0" y1="${y}" x2="${w}" y2="${y}" stroke="${baseline?'rgba(126,185,142,.28)':'rgba(255,255,255,.065)'}" stroke-width="${baseline?1.4:1}" vector-effect="non-scaling-stroke"/>`;
-    yLabels+=`<span style="top:${ratio*100}%">${shortMoney(value)}</span>`;
+    yLabels+=`<span style="top:${ratioFromTop*100}%">${shortMoney(value)}</span>`;
   }
+
   yAxis.innerHTML=yLabels;
 
   const linePath=points.map((p,i)=>(i?'L':'M')+p.x+' '+p.y).join(' ');
