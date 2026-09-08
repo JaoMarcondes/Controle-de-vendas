@@ -230,7 +230,7 @@ function renderChart(list){
   const bottom=274;
   const usableH=bottom-top;
   const maxValue=Math.max(0,...series.map(p=>p.value));
-  const axisMax=Math.max(maxValue,100);
+  const axisMax=Math.max(maxValue,1000);
 
   const points=series.map((p,i)=>{
     const x=series.length===1 ? w/2 : i*(w/(series.length-1));
@@ -238,19 +238,19 @@ function renderChart(list){
     return {...p,x,y};
   });
 
-  // Eixo de R$ 100 em R$ 100, sem arredondar o valor máximo real.
+  // Eixo visual de R$ 100 em R$ 100.
+  // A escala mínima é R$ 1.000, mas os valores das vendas não são alterados.
   let grid='';
   let yLabels='';
   const step=100;
-  const firstLabel=Math.floor(axisMax/step)*step;
 
-  for(let value=firstLabel; value>=0; value-=step){
-    const ratioFromTop=1-(value/axisMax);
-    const y=top+ratioFromTop*usableH;
+  for(let value=0; value<=axisMax; value+=step){
+    const ratio=value/axisMax;
+    const y=bottom-(ratio*usableH);
     const baseline=value===0;
 
     grid+=`<line x1="0" y1="${y}" x2="${w}" y2="${y}" stroke="${baseline?'rgba(126,185,142,.28)':'rgba(255,255,255,.065)'}" stroke-width="${baseline?1.4:1}" vector-effect="non-scaling-stroke"/>`;
-    yLabels+=`<span style="top:${ratioFromTop*100}%">${shortMoney(value)}</span>`;
+    yLabels+=`<span style="bottom:${ratio*100}%">${shortMoney(value)}</span>`;
   }
 
   yAxis.innerHTML=yLabels;
