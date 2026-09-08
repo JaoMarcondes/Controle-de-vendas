@@ -241,11 +241,13 @@ function renderChart(list){
   // Linhas horizontais e eixo sempre começando em zero.
   let grid='';
   let yLabels='';
-  const gridLines=5;
-  for(let i=0;i<gridLines;i++){
-    const ratio=i/(gridLines-1);
-    const y=top+ratio*usableH;
-    const value=axisMax*(1-ratio);
+const step = 100;
+const gridLines = Math.floor(axisMax / step) + 1;
+
+for(let i=0;i<gridLines;i++){
+  const value = axisMax - (i * step);
+  const ratio = value / axisMax;
+  const y = bottom - (ratio * usableH);
     const baseline=i===gridLines-1;
     grid+=`<line x1="0" y1="${y}" x2="${w}" y2="${y}" stroke="${baseline?'rgba(126,185,142,.28)':'rgba(255,255,255,.065)'}" stroke-width="${baseline?1.4:1}" vector-effect="non-scaling-stroke"/>`;
     yLabels+=`<span style="top:${ratio*100}%">${shortMoney(value)}</span>`;
